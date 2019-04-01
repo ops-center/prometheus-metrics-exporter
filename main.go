@@ -17,6 +17,10 @@ func NewRootCmd() *cobra.Command {
 		Short:             `Prometheus metrics writer`,
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := metricsConf.Validate(); err!=nil {
+				return err
+			}
+
 			metricsExporter, err := metrics.NewMetricsExporter(metricsConf, prometheus.NewRegistry())
 			if err != nil {
 				return errors.Wrap(err, "failed to create client for metrics exporter")
@@ -26,6 +30,7 @@ func NewRootCmd() *cobra.Command {
 			if err := metricsExporter.Run(stopCh); err!=nil {
 				return err
 			}
+			<-stopCh
 			return nil
 		},
 	}

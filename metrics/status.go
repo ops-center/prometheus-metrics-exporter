@@ -1,17 +1,16 @@
 package metrics
 
 import (
-	v "github.com/appscode/go/version"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
 	up = prometheus.NewDesc(
-		prometheus.BuildFQName("operator", "kubevault", "up"),
-		"Is kubevault operator is running.",
+		prometheus.BuildFQName("", "", "up"),
+		"Is metrics exporter is running.",
 		nil, prometheus.Labels{
-			"maintainer": "appscode",
-			"version":    v.Version.Version,
+			"version": "dev",
+			"who" : "metric-exporter",
 		},
 	)
 )

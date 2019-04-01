@@ -23,6 +23,7 @@ type RemoteWriter struct {
 	client   *remote.Client
 	interval time.Duration
 	gatherer prometheus.Gatherer
+	extraLabels []prompb.Label
 }
 
 func NewRemoteClient(addr string, config prom_config.HTTPClientConfig, timeout time.Duration) (*remote.Client, error) {
@@ -41,7 +42,7 @@ func NewRemoteClient(addr string, config prom_config.HTTPClientConfig, timeout t
 	return remote.NewClient(0, conf)
 }
 
-func NewRemoteWriter(cl *remote.Client, g prometheus.Gatherer, interval time.Duration) (*RemoteWriter, error) {
+func NewRemoteWriter(cl *remote.Client, g prometheus.Gatherer, interval time.Duration, extraLabels []prompb.Label) (*RemoteWriter, error) {
 	if cl == nil {
 		return nil, errors.New("remote storage client can not be nil")
 	}
@@ -52,6 +53,7 @@ func NewRemoteWriter(cl *remote.Client, g prometheus.Gatherer, interval time.Dur
 		client:   cl,
 		interval: interval,
 		gatherer: g,
+		extraLabels:extraLabels,
 	}, nil
 }
 
@@ -71,7 +73,7 @@ func (w *RemoteWriter) remoteWrite(ctx context.Context) error {
 		return errors.Wrap(err, "failed to collect metrics")
 	}
 
-	samples, err := metricFamilyToTimeseries(mfs)
+	samples, err := metricFamilyToTimeseries(mfs, w.extraLabels)
 	if err != nil {
 		return errors.Wrap(err, "failed to convert metric family to time series")
 	}
@@ -88,7 +90,7 @@ func (w *RemoteWriter) remoteWrite(ctx context.Context) error {
 	return nil
 }
 
-func metricFamilyToTimeseries(mfs []*dto.MetricFamily) ([]prompb.TimeSeries, error) {
+func metricFamilyToTimeseries(mfs []*dto.MetricFamily, extraLabels []prompb.Label) ([]prompb.TimeSeries, error) {
 	ts := []prompb.TimeSeries{}
 	for _, mf := range mfs {
 		vec, err := expfmt.ExtractSamples(&expfmt.DecodeOptions{
@@ -101,7 +103,7 @@ func metricFamilyToTimeseries(mfs []*dto.MetricFamily) ([]prompb.TimeSeries, err
 		for _, s := range vec {
 			if s != nil {
 				ts = append(ts, prompb.TimeSeries{
-					Labels: metricToLabels(s.Metric),
+					Labels: metricToLabels(s.Metric, extraLabels),
 					Samples: []prompb.Sample{
 						{
 							Value:     float64(s.Value),
@@ -115,7 +117,7 @@ func metricFamilyToTimeseries(mfs []*dto.MetricFamily) ([]prompb.TimeSeries, err
 	return ts, nil
 }
 
-func metricToLabels(m model.Metric) []prompb.Label {
+func metricToLabels(m model.Metric, extraLabels []prompb.Label) []prompb.Label {
 	lables := []prompb.Label{}
 	for k, v := range m {
 		lables = append(lables, prompb.Label{
@@ -124,13 +126,9 @@ func metricToLabels(m model.Metric) []prompb.Label {
 		})
 	}
 
-	lables = append(lables, prompb.Label{
-		Name: "client_id",
-		Value: "vault-operator",
-	}, prompb.Label{
-		Name: "cluster_id",
-		Value: "1234",
-	})
+	for _, lb := range extraLabels {
+		lables = append(lables, lb)
+	}
 	return lables
 }
 

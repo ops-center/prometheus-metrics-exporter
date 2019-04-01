@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"github.com/prometheus/prometheus/prompb"
 	"time"
 
 	"github.com/pkg/errors"
@@ -15,6 +16,9 @@ const (
 )
 
 type MetricsExporterConfigs struct {
+	// The id of the metrics exporter
+	Id string
+
 	// The address where metrics will be sent
 	Addr string
 
@@ -45,6 +49,7 @@ func NewMetricsExporterConfigs() *MetricsExporterConfigs {
 }
 
 func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&m.Id, "metrics-exporter.id", m.Id, "The id for metrics exporter")
 	fs.StringVar(&m.Addr, "metrics-exporter.url", m.Addr, "The address of metrics storage where metrics data will be sent")
 	fs.DurationVar(&m.WriteTimeout, "metrics-exporter.write-timeout", defaultTimeout, "Specifies the interval at which metrics data will be sent")
 	fs.DurationVar(&m.Interval, "metrics-exporter.interval", defaultInterval, "Specifies the metrics write timeout")
@@ -56,6 +61,9 @@ func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
 }
 
 func (m *MetricsExporterConfigs) Validate() error {
+	if m.Id == "" {
+		return errors.New("metrics-exporter.id must non-empty")
+	}
 	if m.WriteTimeout < time.Second*5 {
 		return errors.New("metrics-exporter.write-timeout must be greater than 5s")
 	}
@@ -104,7 +112,12 @@ func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
 		return errors.Wrap(err, "failed to create metrics storage remote client")
 	}
 
-	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval)
+	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval, []prompb.Label{
+		{
+			Name: "client-id",
+			Value: m.Config.Id,
+		},
+	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create remote writer for metrics")
 	}
