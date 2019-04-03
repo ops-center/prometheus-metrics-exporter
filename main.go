@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/golang/glog"
 	"github.com/nightfury1204/prometheus-remote-metric-writer/metrics"
 	"github.com/pkg/errors"
@@ -17,7 +18,7 @@ func NewRootCmd() *cobra.Command {
 		Short:             `Prometheus metrics writer`,
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := metricsConf.Validate(); err!=nil {
+			if err := metricsConf.Validate(); err != nil {
 				return err
 			}
 
@@ -27,7 +28,7 @@ func NewRootCmd() *cobra.Command {
 			}
 
 			stopCh := make(chan struct{})
-			if err := metricsExporter.Run(stopCh); err!=nil {
+			if err := metricsExporter.Run(stopCh); err != nil {
 				return err
 			}
 			<-stopCh

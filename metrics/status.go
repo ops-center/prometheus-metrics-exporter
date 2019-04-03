@@ -15,17 +15,17 @@ var (
 	)
 )
 
-type OperatorHealthCollector struct {
+type HealthCollector struct {
 }
 
-func NewOperatorHealthCollector() *OperatorHealthCollector {
-	return &OperatorHealthCollector{}
+func NewHealthCollector() *HealthCollector {
+	return &HealthCollector{}
 }
 
-func (c *OperatorHealthCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c *HealthCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- up
 }
 
-func (c *OperatorHealthCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *HealthCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(up, prometheus.GaugeValue, 1)
 }
