@@ -4,9 +4,9 @@ import (
 	"flag"
 
 	"github.com/golang/glog"
-	"github.com/nightfury1204/prometheus-remote-metric-writer/metrics"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/searchlight/prometheus-metrics-exporter/metrics"
 	"github.com/spf13/cobra"
 )
 

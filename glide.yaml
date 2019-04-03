@@ -1,4 +1,4 @@
-package: github.com/nightfury1204/prometheus-remote-metric-writer
+package: github.com/searchlight/prometheus-metrics-exporter
 import:
 - package: github.com/gogo/protobuf
   subpackages:

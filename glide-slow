@@ -5,7 +5,7 @@
 # - ???
 # - Profit
 
-pushd $GOPATH/src/github.com/nightfury1204/prometheus-remote-metric-writer
+pushd $GOPATH/src/github.com/searchlight/prometheus-metrics-exporter
 
 glide up -v
 glide vc --use-lock-file --only-code --no-tests
