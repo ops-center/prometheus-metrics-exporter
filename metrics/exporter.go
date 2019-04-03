@@ -89,7 +89,8 @@ func NewMetricsExporter(c *MetricsExporterConfigs, registry *prometheus.Registry
 	// TODO: another function?
 	registry.MustRegister(prometheus.NewGoCollector(),
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
-		NewOperatorHealthCollector())
+		NewHealthCollector(),
+		NewTestMetricsCollector(c.Id))
 
 	return &MetricsExporter{
 		Config:       c,
@@ -114,7 +115,7 @@ func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
 
 	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval, []prompb.Label{
 		{
-			Name: "client-id",
+			Name: "client_id",
 			Value: m.Config.Id,
 		},
 	})
