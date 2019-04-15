@@ -51,8 +51,8 @@ func NewMetricsExporterConfigs() *MetricsExporterConfigs {
 func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&m.Id, "metrics-exporter.id", m.Id, "The id for metrics exporter")
 	fs.StringVar(&m.Addr, "metrics-exporter.url", m.Addr, "The address of metrics storage where metrics data will be sent")
-	fs.DurationVar(&m.WriteTimeout, "metrics-exporter.write-timeout", defaultTimeout, "Specifies the interval at which metrics data will be sent")
-	fs.DurationVar(&m.Interval, "metrics-exporter.interval", defaultInterval, "Specifies the metrics write timeout")
+	fs.DurationVar(&m.WriteTimeout, "metrics-exporter.write-timeout", defaultTimeout, "Specifies the metrics write timeout")
+	fs.DurationVar(&m.Interval, "metrics-exporter.interval", defaultInterval, "Specifies the interval at which metrics data will be sent")
 	fs.StringVar(&m.CAFile, "metrics-exporter.ca-cert-file", m.CAFile, "The path of the CA cert to use for the remote metric storage.")
 	fs.StringVar(&m.CertFile, "metrics-exporter.client-cert-file", m.CertFile, "The path of the client cert to use for communicating with the remote metric storage.")
 	fs.StringVar(&m.KeyFile, "metrics-exporter.client-key-file", m.KeyFile, "The path of the client key to use for communicating with the remote metric storage.")
@@ -63,6 +63,9 @@ func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
 func (m *MetricsExporterConfigs) Validate() error {
 	if m.Id == "" {
 		return errors.New("metrics-exporter.id must non-empty")
+	}
+	if m.Addr == "" {
+		return errors.New("metrics-exporter.url must non-empty")
 	}
 	if m.WriteTimeout < time.Second*5 {
 		return errors.New("metrics-exporter.write-timeout must be greater than 5s")
