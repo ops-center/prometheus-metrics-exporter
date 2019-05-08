@@ -101,6 +101,11 @@ func NewMetricsExporter(c *MetricsExporterConfigs, registry *prometheus.Registry
 	}, nil
 }
 
+func (m *MetricsExporter) Register(cs ...prometheus.Collector) {
+	m.PromRegistry.MustRegister(cs...)
+}
+
+// non-blocking
 func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
 	httpConf := prom_config.HTTPClientConfig{
 		TLSConfig: prom_config.TLSConfig{
