@@ -24,6 +24,8 @@ spec:
             - "--metrics-exporter.insecure-skip-verify"
             - "--metrics-exporter.id=1"
             - "--metrics-exporter.url=http://m3coordinator.demo.svc:7201/api/v1/prom/remote/write"
+          ports:
+            - containerPort: 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -51,3 +53,5 @@ spec:
             - "--metrics-exporter.insecure-skip-verify"
             - "--metrics-exporter.id=2"
             - "--metrics-exporter.url=http://m3coordinator.demo.svc:7201/api/v1/prom/remote/write"
+          ports:
+            - containerPort: 8080
