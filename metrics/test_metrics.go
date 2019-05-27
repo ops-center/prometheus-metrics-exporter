@@ -14,7 +14,7 @@ func NewTestMetricsCollector(id string) *TestMetricsCollector {
 			prometheus.BuildFQName("test_metrics", "", id),
 			"test metrics",
 			nil, prometheus.Labels{
-				"who" : "metric-exporter",
+				"who": "metric-exporter",
 			},
 		),
 	}

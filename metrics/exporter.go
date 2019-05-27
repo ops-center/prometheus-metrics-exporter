@@ -1,12 +1,12 @@
 package metrics
 
 import (
-	"github.com/prometheus/prometheus/prompb"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	prom_config "github.com/prometheus/common/config"
+	"github.com/prometheus/prometheus/prompb"
 	"github.com/spf13/pflag"
 )
 
@@ -123,7 +123,7 @@ func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
 
 	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval, []prompb.Label{
 		{
-			Name: "client_id",
+			Name:  "client_id",
 			Value: m.Config.Id,
 		},
 	})

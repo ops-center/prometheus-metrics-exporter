@@ -18,7 +18,7 @@ var (
 		Name: "alert_test",
 		Help: "for testing alert purpose",
 		ConstLabels: prometheus.Labels{
-			"app" : "metric-exporter",
+			"app": "metric-exporter",
 		},
 	})
 )
@@ -48,7 +48,7 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			http.Handle("/alert", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+			http.Handle("/alert", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				data := struct {
 					Value int `json:"value"`
 				}{}

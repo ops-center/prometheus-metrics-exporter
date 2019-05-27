@@ -10,7 +10,7 @@ var (
 		"Is metrics exporter is running.",
 		nil, prometheus.Labels{
 			"version": "dev",
-			"who" : "metric-exporter",
+			"who":     "metric-exporter",
 		},
 	)
 )
