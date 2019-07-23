@@ -3,11 +3,13 @@ package metrics
 import (
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	prom_config "github.com/prometheus/common/config"
 	"github.com/prometheus/prometheus/prompb"
 	"github.com/spf13/pflag"
+	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 const (
@@ -42,6 +44,9 @@ type MetricsExporterConfigs struct {
 
 	// Disable target certificate validation.
 	InsecureSkipVerify bool
+
+	// License to use for authentication
+	License string
 }
 
 func NewMetricsExporterConfigs() *MetricsExporterConfigs {
@@ -58,6 +63,7 @@ func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&m.KeyFile, "metrics-exporter.client-key-file", m.KeyFile, "The path of the client key to use for communicating with the remote metric storage.")
 	fs.StringVar(&m.ServerName, "metrics-exporter.server-name", m.ServerName, "The server name which will be used to verify metrics storage.")
 	fs.BoolVar(&m.InsecureSkipVerify, "metrics-exporter.insecure-skip-verify", m.InsecureSkipVerify, "To skip tls verification when communicating with the remote metric storage.")
+	fs.StringVar(&m.License, "metrics-exporter.license", m.License, "License to use for authentication")
 }
 
 func (m *MetricsExporterConfigs) Validate() error {
@@ -90,9 +96,8 @@ func NewMetricsExporter(c *MetricsExporterConfigs, registry *prometheus.Registry
 	}
 
 	// TODO: another function?
-	registry.MustRegister(prometheus.NewGoCollector(),
-		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
-		NewHealthCollector(),
+	// TODO: remove later
+	registry.MustRegister(NewHealthCollector(),
 		NewTestMetricsCollector(c.Id))
 
 	return &MetricsExporter{
@@ -116,17 +121,43 @@ func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
 			InsecureSkipVerify: m.Config.InsecureSkipVerify,
 		},
 	}
+
+	if m.Config.License != "" {
+		// set the license as bearer token
+		httpConf.BearerToken = prom_config.Secret(m.Config.License)
+
+		jwtToken, err := jwt.ParseSigned(m.Config.License)
+		if err != nil {
+			return err
+		}
+
+		data := &License{}
+		err = jwtToken.UnsafeClaimsWithoutVerification(data)
+		if err != nil {
+			return err
+		}
+
+		glog.Info("Overwriting client id from license", "client_id", data.Subject)
+		m.Config.Id = data.Subject
+
+	} else {
+		glog.Warning("license is not provided")
+	}
+
 	cl, err := NewRemoteClient(m.Config.Addr, httpConf, m.Config.WriteTimeout)
 	if err != nil {
 		return errors.Wrap(err, "failed to create metrics storage remote client")
 	}
 
-	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval, []prompb.Label{
-		{
-			Name:  "client_id",
-			Value: m.Config.Id,
-		},
+	// TODO: all extra labels in here
+	var extraLabels []prompb.Label
+	extraLabels = append(extraLabels, GetLabels()...)
+	extraLabels = append(extraLabels, prompb.Label{
+		Name:  "client_id",
+		Value: m.Config.Id,
 	})
+
+	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval, extraLabels)
 	if err != nil {
 		return errors.Wrap(err, "failed to create remote writer for metrics")
 	}

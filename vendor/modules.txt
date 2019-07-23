@@ -236,6 +236,7 @@ go.opencensus.io/internal
 go.opencensus.io/trace/internal
 # golang.org/x/crypto v0.0.0-20190422183909-d864b10871cd
 golang.org/x/crypto/ed25519
+golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
@@ -334,6 +335,11 @@ google.golang.org/grpc/internal/syscall
 gopkg.in/fsnotify/fsnotify.v1
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
+# gopkg.in/square/go-jose.v2 v2.3.1
+gopkg.in/square/go-jose.v2/jwt
+gopkg.in/square/go-jose.v2
+gopkg.in/square/go-jose.v2/json
+gopkg.in/square/go-jose.v2/cipher
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
 # k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b

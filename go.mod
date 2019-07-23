@@ -14,4 +14,5 @@ require (
 	github.com/prometheus/prometheus v2.10.0+incompatible
 	github.com/spf13/cobra v0.0.4
 	github.com/spf13/pflag v1.0.3
+	gopkg.in/square/go-jose.v2 v2.3.1
 )
