@@ -1,8 +1,9 @@
 package metrics
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"math/rand"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type TestMetricsCollector struct {

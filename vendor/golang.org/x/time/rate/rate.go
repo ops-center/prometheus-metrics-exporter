@@ -6,7 +6,6 @@
 package rate
 
 import (
-	"context"
 	"fmt"
 	"math"
 	"sync"

@@ -571,7 +571,6 @@ func parseNFSTransportStats(ss []string, statVersion string) (*NFSTransportStats
 	}
 
 	// Allocate enough for v1.1 stats since zero value for v1.1 stats will be okay
-<<<<<<< HEAD
 	// in a v1.0 response. Since the stat length is bigger for TCP stats, we use
 	// the TCP length here.
 	//
@@ -580,17 +579,12 @@ func parseNFSTransportStats(ss []string, statVersion string) (*NFSTransportStats
 	// See: https://github.com/prometheus/node_exporter/issues/571.
 	ns := make([]uint64, fieldTransport11TCPLen)
 	for i, s := range ss {
-=======
-	// in a v1.0 response
-	ns := make([]uint64, 0, fieldTransport11Len)
-	for _, s := range ss {
->>>>>>> Add license and extra labels
 		n, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
 			return nil, err
 		}
 
-		ns = append(ns, n)
+		ns[i] = n
 	}
 
 	// The fields differ depending on the transport protocol (TCP or UDP)

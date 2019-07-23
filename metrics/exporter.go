@@ -1,13 +1,13 @@
 package metrics
 
 import (
-	"github.com/golang/glog"
-	"github.com/prometheus/prometheus/prompb"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	prom_config "github.com/prometheus/common/config"
+	"github.com/prometheus/prometheus/prompb"
 	"github.com/spf13/pflag"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
@@ -153,7 +153,7 @@ func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
 	var extraLabels []prompb.Label
 	extraLabels = append(extraLabels, GetLabels()...)
 	extraLabels = append(extraLabels, prompb.Label{
-		Name: "client_id",
+		Name:  "client_id",
 		Value: m.Config.Id,
 	})
 
