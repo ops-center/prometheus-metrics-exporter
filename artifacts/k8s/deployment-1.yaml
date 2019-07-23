@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metric-exporter-1
+  namespace: demo
+  labels:
+    app: metric-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metric-exporter-1
+  template:
+    metadata:
+      labels:
+        app: metric-exporter-1
+    spec:
+      containers:
+        - name: metric-exporter
+          image: nightfury1204/prometheus-remote-metric-writer:canary
+          imagePullPolicy: Always
+          args:
+            - "-v=10"
+            - "--metrics-exporter.insecure-skip-verify"
+            - "--metrics-exporter.id=1"
+            - "--metrics-exporter.url=http://m3coordinator.demo.svc:7201/api/v1/prom/remote/write"
+          ports:
+            - containerPort: 8080
+

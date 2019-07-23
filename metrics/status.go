@@ -8,10 +8,8 @@ var (
 	up = prometheus.NewDesc(
 		prometheus.BuildFQName("", "", "up"),
 		"Is metrics exporter is running.",
-		nil, prometheus.Labels{
-			"version": "dev",
-			"who":     "metric-exporter",
-		},
+		nil,
+		nil,
 	)
 )
 

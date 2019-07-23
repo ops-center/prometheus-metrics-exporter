@@ -20,9 +20,9 @@ import (
 )
 
 type RemoteWriter struct {
-	client      *remote.Client
-	interval    time.Duration
-	gatherer    prometheus.Gatherer
+	client   *remote.Client
+	interval time.Duration
+	gatherer prometheus.Gatherer
 	extraLabels []prompb.Label
 }
 
@@ -50,10 +50,10 @@ func NewRemoteWriter(cl *remote.Client, g prometheus.Gatherer, interval time.Dur
 		return nil, errors.New("prometheus metrics gatherer can not be nil")
 	}
 	return &RemoteWriter{
-		client:      cl,
-		interval:    interval,
-		gatherer:    g,
-		extraLabels: extraLabels,
+		client:   cl,
+		interval: interval,
+		gatherer: g,
+		extraLabels:extraLabels,
 	}, nil
 }
 
