@@ -4,11 +4,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"math/rand"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/prometheus/prompb"
 	"github.com/searchlight/prometheus-metrics-exporter/metrics"
 	"github.com/spf13/cobra"
 )
@@ -25,6 +29,7 @@ var (
 
 func NewRootCmd() *cobra.Command {
 	metricsConf := metrics.NewMetricsExporterConfigs()
+	var parallelProcess int
 
 	var rootCmd = &cobra.Command{
 		Use:               "metrics-writer [command]",
@@ -35,17 +40,31 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			metricsExporter, err := metrics.NewMetricsExporter(metricsConf, prometheus.NewRegistry())
-			if err != nil {
-				return errors.Wrap(err, "failed to create client for metrics exporter")
+			if parallelProcess < 1 {
+				parallelProcess = 1
 			}
 
-			alertMetrc.Set(0)
-			metricsExporter.Register(alertMetrc)
-
 			stopCh := make(chan struct{})
-			if err := metricsExporter.Run(stopCh); err != nil {
-				return err
+			for i := 1; i <= parallelProcess; i++ {
+				metricsExporter, err := metrics.NewMetricsExporter(metricsConf, prometheus.NewRegistry())
+				if err != nil {
+					return errors.Wrap(err, "failed to create client for metrics exporter")
+				}
+
+				alertMetrc.Set(0)
+				metricsExporter.Register(alertMetrc)
+				metricsExporter.Register(prometheus.NewGoCollector())
+				metricsExporter.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+
+				lbs := []prompb.Label{
+					{
+						Value: strconv.Itoa(rand.Int() + int(time.Now().Unix())),
+						Name:  "extra",
+					},
+				}
+				if err := metricsExporter.Run(stopCh, lbs); err != nil {
+					return err
+				}
 			}
 
 			http.Handle("/alert", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +93,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	flag.CommandLine.Parse([]string{})
 	metricsConf.AddFlags(rootCmd.PersistentFlags())
+	rootCmd.PersistentFlags().IntVar(&parallelProcess, "nums-of-parallel-req", 1, "nums of parallel request")
 	return rootCmd
 }
 
