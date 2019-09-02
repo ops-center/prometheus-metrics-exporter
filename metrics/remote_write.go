@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"context"
-	"net/url"
 	"time"
 
 	"github.com/appscode/go/wait"
@@ -12,37 +11,19 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
-	prom_config "github.com/prometheus/common/config"
 	"github.com/prometheus/common/expfmt"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/prompb"
-	"github.com/prometheus/prometheus/storage/remote"
 )
 
 type RemoteWriter struct {
-	client      *remote.Client
+	client      *RemoteClient
 	interval    time.Duration
 	gatherer    prometheus.Gatherer
 	extraLabels []prompb.Label
 }
 
-func NewRemoteClient(addr string, config prom_config.HTTPClientConfig, timeout time.Duration) (*remote.Client, error) {
-	u, err := url.Parse(addr)
-	if err != nil {
-		return nil, err
-	}
-
-	conf := &remote.ClientConfig{
-		URL: &prom_config.URL{
-			u,
-		},
-		Timeout:          model.Duration(timeout),
-		HTTPClientConfig: config,
-	}
-	return remote.NewClient(0, conf)
-}
-
-func NewRemoteWriter(cl *remote.Client, g prometheus.Gatherer, interval time.Duration, extraLabels []prompb.Label) (*RemoteWriter, error) {
+func NewRemoteWriter(cl *RemoteClient, g prometheus.Gatherer, interval time.Duration, extraLabels []prompb.Label) (*RemoteWriter, error) {
 	if cl == nil {
 		return nil, errors.New("remote storage client can not be nil")
 	}

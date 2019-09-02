@@ -9,11 +9,10 @@ import (
 	prom_config "github.com/prometheus/common/config"
 	"github.com/prometheus/prometheus/prompb"
 	"github.com/spf13/pflag"
-	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 const (
-	defaultInterval = time.Second * 30
+	defaultInterval = time.Second * 15
 	defaultTimeout  = time.Minute * 3
 )
 
@@ -73,12 +72,12 @@ func (m *MetricsExporterConfigs) Validate() error {
 	if m.Addr == "" {
 		return errors.New("metrics-exporter.url must non-empty")
 	}
-	if m.WriteTimeout < time.Second*5 {
-		return errors.New("metrics-exporter.write-timeout must be greater than 5s")
-	}
-	if m.Interval < time.Second*5 {
-		return errors.New("metrics-exporter.write-timeout must be greater than 5s")
-	}
+	//if m.WriteTimeout < time.Second*5 {
+	//	return errors.New("metrics-exporter.write-timeout must be greater than 5s")
+	//}
+	//if m.Interval < time.Second*5 {
+	//	return errors.New("metrics-exporter.interval must be greater than 5s")
+	//}
 	return nil
 }
 
@@ -111,7 +110,7 @@ func (m *MetricsExporter) Register(cs ...prometheus.Collector) {
 }
 
 // non-blocking
-func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
+func (m *MetricsExporter) Run(stopCh <-chan struct{}, labels []prompb.Label) error {
 	httpConf := prom_config.HTTPClientConfig{
 		TLSConfig: prom_config.TLSConfig{
 			CAFile:             m.Config.CAFile,
@@ -122,40 +121,25 @@ func (m *MetricsExporter) Run(stopCh <-chan struct{}) error {
 		},
 	}
 
-	if m.Config.License != "" {
-		// set the license as bearer token
-		httpConf.BearerToken = prom_config.Secret(m.Config.License)
-
-		jwtToken, err := jwt.ParseSigned(m.Config.License)
-		if err != nil {
-			return err
-		}
-
-		data := &License{}
-		err = jwtToken.UnsafeClaimsWithoutVerification(data)
-		if err != nil {
-			return err
-		}
-
-		glog.Info("Overwriting client id from license", "client_id", data.Subject)
-		m.Config.Id = data.Subject
-
-	} else {
+	if len(m.Config.License) == 0 {
 		glog.Warning("license is not provided")
 	}
 
-	cl, err := NewRemoteClient(m.Config.Addr, httpConf, m.Config.WriteTimeout)
+	cl, err := NewRemoteClient(m.Config.Addr, m.Config.License, httpConf, m.Config.WriteTimeout)
 	if err != nil {
 		return errors.Wrap(err, "failed to create metrics storage remote client")
 	}
 
 	// TODO: all extra labels in here
 	var extraLabels []prompb.Label
+	extraLabels = append(extraLabels, labels...)
 	extraLabels = append(extraLabels, GetLabels()...)
-	extraLabels = append(extraLabels, prompb.Label{
-		Name:  "client_id",
-		Value: m.Config.Id,
-	})
+	/*
+		client id will be set in the reverse proxy
+		extraLabels = append(extraLabels, prompb.Label{
+			Name:  "client_id",
+			Value: m.Config.Id,
+		})*/
 
 	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval, extraLabels)
 	if err != nil {
