@@ -17,9 +17,6 @@ const (
 )
 
 type MetricsExporterConfigs struct {
-	// The id of the metrics exporter
-	Id string
-
 	// The address where metrics will be sent
 	Addr string
 
@@ -53,7 +50,6 @@ func NewMetricsExporterConfigs() *MetricsExporterConfigs {
 }
 
 func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&m.Id, "metrics-exporter.id", m.Id, "The id for metrics exporter")
 	fs.StringVar(&m.Addr, "metrics-exporter.url", m.Addr, "The address of metrics storage where metrics data will be sent")
 	fs.DurationVar(&m.WriteTimeout, "metrics-exporter.write-timeout", defaultTimeout, "Specifies the metrics write timeout")
 	fs.DurationVar(&m.Interval, "metrics-exporter.interval", defaultInterval, "Specifies the interval at which metrics data will be sent")
@@ -66,18 +62,9 @@ func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
 }
 
 func (m *MetricsExporterConfigs) Validate() error {
-	if m.Id == "" {
-		return errors.New("metrics-exporter.id must non-empty")
-	}
 	if m.Addr == "" {
 		return errors.New("metrics-exporter.url must non-empty")
 	}
-	//if m.WriteTimeout < time.Second*5 {
-	//	return errors.New("metrics-exporter.write-timeout must be greater than 5s")
-	//}
-	//if m.Interval < time.Second*5 {
-	//	return errors.New("metrics-exporter.interval must be greater than 5s")
-	//}
 	return nil
 }
 
@@ -93,11 +80,6 @@ func NewMetricsExporter(c *MetricsExporterConfigs, registry *prometheus.Registry
 	if registry == nil {
 		registry = prometheus.NewRegistry()
 	}
-
-	// TODO: another function?
-	// TODO: remove later
-	registry.MustRegister(NewHealthCollector(),
-		NewTestMetricsCollector(c.Id))
 
 	return &MetricsExporter{
 		Config:       c,
@@ -136,10 +118,7 @@ func (m *MetricsExporter) Run(stopCh <-chan struct{}, labels []prompb.Label) err
 	extraLabels = append(extraLabels, GetLabels()...)
 	/*
 		client id will be set in the reverse proxy
-		extraLabels = append(extraLabels, prompb.Label{
-			Name:  "client_id",
-			Value: m.Config.Id,
-		})*/
+	*/
 
 	rw, err := NewRemoteWriter(cl, m.PromRegistry, m.Config.Interval, extraLabels)
 	if err != nil {
