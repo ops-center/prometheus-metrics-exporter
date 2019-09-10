@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"os"
 	"time"
 
 	"github.com/golang/glog"
@@ -14,6 +15,7 @@ import (
 const (
 	defaultInterval = time.Second * 15
 	defaultTimeout  = time.Minute * 3
+	LicenseKeyEnv   = "LICENSE_KEY"
 )
 
 type MetricsExporterConfigs struct {
@@ -46,7 +48,11 @@ type MetricsExporterConfigs struct {
 }
 
 func NewMetricsExporterConfigs() *MetricsExporterConfigs {
-	return &MetricsExporterConfigs{}
+	return &MetricsExporterConfigs{
+		License:      os.Getenv(LicenseKeyEnv),
+		WriteTimeout: defaultTimeout,
+		Interval:     defaultInterval,
+	}
 }
 
 func (m *MetricsExporterConfigs) AddFlags(fs *pflag.FlagSet) {
