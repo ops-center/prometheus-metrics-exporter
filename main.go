@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -16,6 +14,8 @@ import (
 	"github.com/searchlight/prometheus-metrics-exporter/metrics"
 	"github.com/spf13/cobra"
 )
+
+const PodNameEnv = "POD_NAME"
 
 var (
 	alertMetrc = prometheus.NewGauge(prometheus.GaugeOpts{
@@ -58,7 +58,7 @@ func NewRootCmd() *cobra.Command {
 
 				lbs := []prompb.Label{
 					{
-						Value: strconv.Itoa(rand.Int() + int(time.Now().Unix())),
+						Value: strconv.Itoa(i),
 						Name:  "extra",
 					},
 				}
