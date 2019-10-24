@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: metric-exporter
-          image: nightfury1204/prometheus-remote-metric-writer:canary
+          image: searchlight/prometheus-remote-metric-writer:canary
           imagePullPolicy: Always
           args:
             - "-v=10"
@@ -61,7 +61,7 @@ spec:
     spec:
       containers:
         - name: metric-exporter
-          image: nightfury1204/prometheus-remote-metric-writer:canary
+          image: searchlight/prometheus-remote-metric-writer:canary
           imagePullPolicy: Always
           args:
             - "-v=10"
