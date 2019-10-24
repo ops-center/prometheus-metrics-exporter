@@ -1,5 +1,6 @@
 # github.com/appscode/go v0.0.0-20191016085057-e186b6c94a3b
 github.com/appscode/go/version
+github.com/appscode/go/util/errors
 github.com/appscode/go/wait
 github.com/appscode/go/runtime
 # github.com/beorn7/perks v1.0.0

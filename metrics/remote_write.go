@@ -72,10 +72,10 @@ func (w *RemoteWriter) remoteWrite(ctx context.Context) error {
 }
 
 func metricFamilyToTimeseries(mfs []*dto.MetricFamily, extraLabels []prompb.Label) ([]prompb.TimeSeries, error) {
-	ts := []prompb.TimeSeries{}
+	var ts []prompb.TimeSeries
 	for _, mf := range mfs {
 		vec, err := expfmt.ExtractSamples(&expfmt.DecodeOptions{
-			model.Now(),
+			Timestamp: model.Now(),
 		}, mf)
 		if err != nil {
 			return nil, err
@@ -99,17 +99,14 @@ func metricFamilyToTimeseries(mfs []*dto.MetricFamily, extraLabels []prompb.Labe
 }
 
 func metricToLabels(m model.Metric, extraLabels []prompb.Label) []prompb.Label {
-	lables := []prompb.Label{}
+	var lables []prompb.Label
 	for k, v := range m {
 		lables = append(lables, prompb.Label{
 			Name:  string(k),
 			Value: string(v),
 		})
 	}
-
-	for _, lb := range extraLabels {
-		lables = append(lables, lb)
-	}
+	lables = append(lables, extraLabels...)
 	return lables
 }
 
