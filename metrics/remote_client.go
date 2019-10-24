@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"time"
 
+	utilerrors "github.com/appscode/go/util/errors"
 	"github.com/pkg/errors"
 	config_util "github.com/prometheus/common/config"
 	prom_config "github.com/prometheus/common/config"
@@ -43,7 +44,7 @@ func NewRemoteClient(addr string, license string, config prom_config.HTTPClientC
 
 	cl := &RemoteClient{
 		url: &prom_config.URL{
-			u,
+			URL: u,
 		},
 		timeout: timeout,
 		client:  httpClient,
@@ -54,12 +55,12 @@ func NewRemoteClient(addr string, license string, config prom_config.HTTPClientC
 
 // Store sends a batch of samples to the HTTP endpoint, the request is the proto marshalled
 // and encoded bytes from codec.go.
-func (c *RemoteClient) Store(ctx context.Context, req []byte) error {
-	httpReq, err := http.NewRequest("POST", c.url.String(), bytes.NewReader(req))
-	if err != nil {
+func (c *RemoteClient) Store(ctx context.Context, req []byte) (rerr error) {
+	httpReq, rerr := http.NewRequest("POST", c.url.String(), bytes.NewReader(req))
+	if rerr != nil {
 		// Errors from NewRequest are from unparseable URLs, so are not
 		// recoverable.
-		return err
+		return
 	}
 	httpReq.Header.Add("Content-Encoding", "snappy")
 	httpReq.Header.Set("Content-Type", "application/x-protobuf")
@@ -76,13 +77,14 @@ func (c *RemoteClient) Store(ctx context.Context, req []byte) error {
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
 
-	httpResp, err := c.client.Do(httpReq.WithContext(ctx))
-	if err != nil {
-		return err
+	httpResp, rerr := c.client.Do(httpReq.WithContext(ctx))
+	if rerr != nil {
+		return
 	}
 	defer func() {
-		io.Copy(ioutil.Discard, httpResp.Body)
-		httpResp.Body.Close()
+		_, e1 := io.Copy(ioutil.Discard, httpResp.Body)
+		e2 := httpResp.Body.Close()
+		rerr = utilerrors.NewAggregate([]error{rerr, e1, e2})
 	}()
 
 	if httpResp.StatusCode/100 != 2 {
@@ -91,10 +93,7 @@ func (c *RemoteClient) Store(ctx context.Context, req []byte) error {
 		if scanner.Scan() {
 			line = scanner.Text()
 		}
-		err = errors.Errorf("server returned HTTP status %s: %s", httpResp.Status, line)
+		rerr = errors.Errorf("server returned HTTP status %s: %s", httpResp.Status, line)
 	}
-	if httpResp.StatusCode/100 == 5 {
-		return err
-	}
-	return err
+	return
 }

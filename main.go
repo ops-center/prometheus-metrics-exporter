@@ -7,15 +7,14 @@ import (
 	"net/http"
 	"strconv"
 
+	"searchlight.dev/prometheus-metrics-exporter/metrics"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/prometheus/prompb"
-	"github.com/searchlight/prometheus-metrics-exporter/metrics"
 	"github.com/spf13/cobra"
 )
-
-const PodNameEnv = "POD_NAME"
 
 var (
 	alertMetrc = prometheus.NewGauge(prometheus.GaugeOpts{
@@ -71,13 +70,14 @@ func NewRootCmd() *cobra.Command {
 				data := struct {
 					Value int `json:"value"`
 				}{}
-				defer r.Body.Close()
+				defer Must(r.Body.Close())
 				if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, "new value", data.Value)
+				_, err := fmt.Fprint(w, "new value", data.Value)
+				Must(err)
 				alertMetrc.Set(float64(data.Value))
 			}))
 
@@ -91,7 +91,7 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
-	flag.CommandLine.Parse([]string{})
+	Must(flag.CommandLine.Parse([]string{}))
 	metricsConf.AddFlags(rootCmd.PersistentFlags())
 	rootCmd.PersistentFlags().IntVar(&parallelProcess, "nums-of-parallel-req", 1, "nums of parallel request")
 	return rootCmd
@@ -102,5 +102,11 @@ func main() {
 
 	if err := rootCmd.Execute(); err != nil {
 		glog.Fatal(err)
+	}
+}
+
+func Must(err error) {
+	if err != nil {
+		panic(err)
 	}
 }

@@ -1,9 +1,9 @@
-module github.com/searchlight/prometheus-metrics-exporter
+module searchlight.dev/prometheus-metrics-exporter
 
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
+	github.com/appscode/go v0.0.0-20191016085057-e186b6c94a3b
 	github.com/gogo/protobuf v1.2.1
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/snappy v0.0.1
