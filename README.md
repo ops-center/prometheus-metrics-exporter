@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/searchlight.dev/prometheus-metrics-exporter)](https://goreportcard.com/report/searchlight.dev/prometheus-metrics-exporter)
+[![Go Report Card](https://goreportcard.com/badge/go.searchlight.dev/prometheus-metrics-exporter)](https://goreportcard.com/report/go.searchlight.dev/prometheus-metrics-exporter)
 [![Build Status](https://github.com/searchlight/prometheus-metrics-exporter/workflows/CI/badge.svg)](https://github.com/searchlight/prometheus-metrics-exporter/actions?workflow=CI)
 [![codecov](https://codecov.io/gh/searchlight/prometheus-metrics-exporter/branch/master/graph/badge.svg)](https://codecov.io/gh/searchlight/prometheus-metrics-exporter)
 [![Docker Pulls](https://img.shields.io/docker/pulls/searchlight/prometheus-metrics-exporter.svg)](https://hub.docker.com/r/searchlight/prometheus-metrics-exporter/)
