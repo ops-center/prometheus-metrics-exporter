@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"searchlight.dev/prometheus-metrics-exporter/metrics"
+	"go.searchlight.dev/prometheus-metrics-exporter/metrics"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
