@@ -220,7 +220,7 @@ func NewBearerAuthFileRoundTripper(bearerFile string, rt http.RoundTripper) http
 
 func (rt *bearerAuthFileRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if len(req.Header.Get("Authorization")) == 0 {
-		b, err := ioutil.ReadFile(rt.bearerFile)
+		b, err := os.ReadFile(rt.bearerFile)
 		if err != nil {
 			return nil, fmt.Errorf("unable to read bearer token file %s: %s", rt.bearerFile, err)
 		}
@@ -258,7 +258,7 @@ func (rt *basicAuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, e
 	}
 	req = cloneRequest(req)
 	if rt.passwordFile != "" {
-		bs, err := ioutil.ReadFile(rt.passwordFile)
+		bs, err := os.ReadFile(rt.passwordFile)
 		if err != nil {
 			return nil, fmt.Errorf("unable to read basic auth password file %s: %s", rt.passwordFile, err)
 		}
@@ -355,7 +355,7 @@ func (c *TLSConfig) getClientCertificate(*tls.CertificateRequestInfo) (*tls.Cert
 
 // readCAFile reads the CA cert file from disk.
 func readCAFile(f string) ([]byte, error) {
-	data, err := ioutil.ReadFile(f)
+	data, err := os.ReadFile(f)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load specified CA cert %s: %s", f, err)
 	}
