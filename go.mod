@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
-	github.com/gogo/protobuf v1.2.1
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/snappy v0.0.1
 	github.com/pkg/errors v0.8.1
